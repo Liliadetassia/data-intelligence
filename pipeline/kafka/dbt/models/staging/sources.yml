@@ -1,0 +1,54 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    description: "Dados brutos ingeridos do CSV e Kafka"
+    tables:
+      - name: behavioral_events
+        description: "Eventos comportamentais do e-commerce (view, cart, purchase)"
+        columns:
+          - name: event_time
+            description: "Timestamp do evento"
+          - name: event_type
+            description: "Tipo: view | cart | purchase | remove_from_cart"
+            tests:
+              - accepted_values:
+                  values: ['view', 'cart', 'purchase', 'remove_from_cart']
+          - name: user_id
+            description: "ID do usuário"
+            tests:
+              - not_null
+          - name: price
+            description: "Preço do produto no momento do evento"
+
+models:
+  - name: stg_behavioral_events
+    description: "Eventos limpos e tipados"
+    columns:
+      - name: event_id
+        tests: [unique, not_null]
+      - name: event_type
+        tests:
+          - accepted_values:
+              values: ['view', 'cart', 'purchase', 'remove_from_cart']
+      - name: user_id
+        tests: [not_null]
+
+  - name: int_user_metrics
+    description: "Métricas agregadas por usuário"
+    columns:
+      - name: user_id
+        tests: [unique, not_null]
+
+  - name: mart_rfm_base
+    description: "Valores brutos RFM por usuário"
+    columns:
+      - name: user_id
+        tests: [unique, not_null]
+
+  - name: mart_product_metrics
+    description: "Performance por produto"
+    columns:
+      - name: product_id
+        tests: [unique, not_null]
